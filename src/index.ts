@@ -1,4 +1,6 @@
+import * as fs from 'node:fs/promises';
 import * as readline from 'node:readline';
+//import handleAdd from './handleAdd';
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -8,57 +10,88 @@ const rl = readline.createInterface({
 console.log('Welcome to the task-tracker CLI!');
 rl.prompt();
 
-enum Satus {
-    todo = "todo",
-    ongoing = "ongoing",
-    done = "done"
+enum Status {
+    todo = 'todo',
+    inPogress = 'in-progress',
+    done = 'done'
 }
 
 type Task = {
     name: string;
-    status: Satus;
+    status: Status;
 }
 
-const tasks: Task[] = [
-    { name: "First task", status: Satus.todo },
-    { name: "Second task", status: Satus.ongoing },
-    { name: "Third task", status: Satus.done }
-];
-
-rl.on('line', (line: string) => {
+rl.on('line', async (line: string) => {
     const args: string[] = line.split(' ');
+    const tasks = await readTasks();
 
     switch (args[0]) {
         case 'list':
-            let tasksToList;
-            if (args[1]) {
-                tasksToList = tasks.filter(t => t.status === args[1]);
-            } else {
-                tasksToList = tasks;
+            if (tasks.length === 0) {
+                console.warn('No task');
+                break;
             }
 
-            tasksToList.forEach(t => console.log(taskToString(t)));
+            let tasksToList = tasks;
+            if (args[1]) {
+                tasksToList = tasksToList.filter(t => t.status === args[1]);
+            }
+            tasksToList.forEach(t => console.log(taskToString(tasks, t)));
             break;
 
         case 'add':
-            const newTask: Task = { name: args[1], status: Satus.todo }
+            const newTask: Task = { name: args[1], status: Status.todo }
             tasks.push(newTask);
-            console.log('New task added: ' + taskToString(tasks[tasks.length - 1]));
+            await writeTasks(tasks);
+            console.log('New task added: ' + taskToString(tasks, tasks[tasks.length - 1]));
             break;
 
-        case 'update':
-            const toUpdate = getTaskFromArg(args[1]);
+        case 'update': {
+            if (tasks.length === 0) {
+                console.warn('No task');
+                break;
+            }
+
+            const toUpdate = getTaskFromArg(tasks, args[1]);
             if (!toUpdate) break;
+            const index = tasks.indexOf(toUpdate);
             const newName = args[2];
-            toUpdate.name = newName;
-            //todo
+            tasks[index] = { name: newName, status: toUpdate.status };
+            await writeTasks(tasks);
+            console.log('Task updated: ' + taskToString(tasks, tasks[index]));
             break;
+        }
 
-        case 'delete':
-            const toDelete = getTaskFromArg(args[1]);
+        case 'mark': {
+            if (tasks.length === 0) {
+                console.warn('No task');
+                break;
+            }
+
+            const toUpdate = getTaskFromArg(tasks, args[1]);
+            if (!toUpdate) break;
+            const index = tasks.indexOf(toUpdate);
+            const newStatus = args[2] as Status;
+            if (!Object.values(Status).includes(newStatus)) {
+                console.error('Invalid status: ' + newStatus);
+                break;
+            }
+            tasks[index] = { name: toUpdate.name, status: newStatus };
+            await writeTasks(tasks);
+            console.log('Task updated: ' + taskToString(tasks, tasks[index]));
+            break;
+        }
+
+        case 'delete':if (tasks.length === 0) {
+                console.warn('No task');
+                break;
+            }
+
+            const toDelete = getTaskFromArg(tasks, args[1]);
             if (!toDelete) break;
-            console.log(`Deleted task: ${taskToString(toDelete)}`);
-            tasks.splice(tasks.indexOf(toDelete) - 1, 1)
+            console.log(`Deleted task: ${taskToString(tasks, toDelete)}`);
+            tasks.splice(tasks.indexOf(toDelete), 1);
+            await writeTasks(tasks);
             break;
 
         default:
@@ -74,11 +107,28 @@ rl.on('close', () => {
     process.exit(0);
 });
 
-function taskToString(t: Task): string {
+async function readTasks(): Promise<Task[]> {
+    return await fs.readFile('./tasks.json', { encoding: 'utf8' })
+        .then(json => JSON.parse(json))
+        .catch(async e => {
+            if (e.code === 'ENOENT') {
+                await writeTasks([]);
+                return [];
+            }
+            else console.error(e);
+        });
+}
+
+async function writeTasks(tasks: Task[]) {
+    const json = JSON.stringify(tasks);
+    await fs.writeFile('./tasks.json', json, { encoding: 'utf8' });
+}
+
+function taskToString(tasks: Task[], t: Task): string {
     return `id: ${tasks.indexOf(t) + 1}, name: "${t.name}", status: ${t.status}`;
 }
 
-function getTaskFromArg(arg: string): Task | null {
+function getTaskFromArg(tasks: Task[], arg: string): Task | null {
     const taskId = parseInt(arg);
     if (Number.isNaN(taskId)) {
         console.log(`Invalid task id: "${arg}"`);
