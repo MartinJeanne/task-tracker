@@ -40,7 +40,8 @@ rl.on('line', async (line: string) => {
             break;
 
         case 'add':
-            const newTask: Task = { name: args[1], status: Status.todo }
+            args.shift();
+            const newTask: Task = { name: args.join(' '), status: Status.todo }
             tasks.push(newTask);
             await writeTasks(tasks);
             console.log('New task added: ' + taskToString(tasks, tasks[tasks.length - 1]));
@@ -82,10 +83,10 @@ rl.on('line', async (line: string) => {
             break;
         }
 
-        case 'delete':if (tasks.length === 0) {
-                console.warn('No task');
-                break;
-            }
+        case 'delete': if (tasks.length === 0) {
+            console.warn('No task');
+            break;
+        }
 
             const toDelete = getTaskFromArg(tasks, args[1]);
             if (!toDelete) break;
