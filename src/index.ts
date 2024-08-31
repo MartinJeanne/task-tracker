@@ -1,5 +1,5 @@
-import * as fs from 'node:fs/promises';
-import * as readline from 'node:readline';
+import fs from 'node:fs/promises';
+import readline from 'node:readline';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -30,7 +30,7 @@ rl.on('line', async (line: string) => {
             if (!isParamsValid(args, 0, 1, '(:status)')) break;
             if (!hasTask(tasks)) break;
             let tasksToList = tasks;
-            if (args[1]) {
+            if (args[1]) { 
                 tasksToList = tasksToList.filter(t => t.status === args[1]);
             }
             tasksToList.forEach(t => console.log(taskToString(tasks, t)));
