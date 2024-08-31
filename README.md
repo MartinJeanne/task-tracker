@@ -5,8 +5,8 @@ Roadmap project link: https://roadmap.sh/projects/task-tracker
 A project to train Backend skills, here Node.js with TypeScript.
 
 ## Run
-`npm i`
+```npm i```
 
-`npm run build`
+```npm run build```
 
-`npm start`
+```npm start```
