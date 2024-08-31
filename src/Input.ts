@@ -33,8 +33,9 @@ export default class Input {
             throw new InputError('No command passed.');
 
         const commandName = lineArray[0] as CommandName;
-        if (!Object.values(CommandName).includes(commandName))
-            throw new InputError(`Unknow command: ${commandName}\nPossible commands: ${CommandName}`);
+        if (!Object.values(CommandName).includes(commandName)) {
+            throw new InputError(`Say what?\nPossible commands: ${Object.values(CommandName)}`);
+        }
 
         const command = Input.availableCommands.find(cmd => cmd.name === commandName);
         if (!command)

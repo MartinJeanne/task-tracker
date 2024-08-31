@@ -42,7 +42,7 @@ const onNewLine = async (line: string) => {
 
         case CommandName.update: {
             const id = parseInt(input.getArg(0));
-            const newName = input.getArg(1);
+            const newDescription = input.getArg(1);
 
             const toUpdate = await taskRepo.findById(id);
             if (!toUpdate) {
@@ -50,7 +50,8 @@ const onNewLine = async (line: string) => {
                 break;
             }
 
-            toUpdate.setName(newName);
+            toUpdate.setDescription(newDescription);
+            toUpdate.setUpdatedAt(new Date());
             await taskRepo.save(toUpdate);
             break;
         }
@@ -69,6 +70,7 @@ const onNewLine = async (line: string) => {
                 console.warn(`Invalid status: ${newStatus}`)
             else {
                 toUpdate.setSatus(newStatus);
+                toUpdate.setUpdatedAt(new Date());
                 await taskRepo.save(toUpdate);
             }
         }
@@ -83,9 +85,6 @@ const onNewLine = async (line: string) => {
             }
             await taskRepo.delete(toDelete);
         }
-
-        default:
-            break;
     }
 }
 

@@ -3,11 +3,12 @@ import Task from "./Task";
 import { Status, UNDEFINED_ID } from './types';
 import JSONParseError from './error/JSONParseError';
 
-type TaskRaw = {
+type RawTask = {
     id: number,
-    name: string,
     description: string,
-    status: Status
+    status: Status,
+    createdAt: string,
+    updatedAt: string
 }
 
 export default class TaskRepository {
@@ -29,7 +30,7 @@ export default class TaskRepository {
         if (!this.isTasksRaw(tasksRaw)) {
             throw new JSONParseError('Invalid data: array of Task expected from JSON')
         }
-        const tasks = this.instantiateTasks(tasksRaw);
+        const tasks = this.toTasks(tasksRaw);
         return tasks.sort((a, b) => a.getId() - b.getId());
     }
 
@@ -44,8 +45,7 @@ export default class TaskRepository {
             task.setId(this.nextValidId(tasks));
         else {
             const toUpdate = tasks.find(t => t.getId() === task.getId());
-            if (toUpdate)
-                tasks.splice(tasks.indexOf(toUpdate), 1);
+            if (toUpdate) tasks.splice(tasks.indexOf(toUpdate), 1);
         }
         tasks.push(task);
         await this.overwriteAll(tasks);
@@ -72,7 +72,7 @@ export default class TaskRepository {
         await fs.writeFile(this.path, json, { encoding: 'utf8' });
     }
 
-    private isTaskRaw(value: unknown): value is TaskRaw {
+    private isTaskRaw(value: unknown): value is RawTask {
         if (!value || typeof value !== 'object') {
             return false
         }
@@ -80,23 +80,22 @@ export default class TaskRepository {
 
         return (
             typeof object.id === 'number' &&
-            typeof object.name === 'string' &&
             typeof object.description === 'string' &&
-            Object.values(Status).includes(object.status as Status)
+            Object.values(Status).includes(object.status as Status) &&
+            typeof object.createdAt === 'string' && !isNaN(Date.parse(object.createdAt)) &&
+            typeof object.updatedAt === 'string' && !isNaN(Date.parse(object.updatedAt))
         )
     }
 
-    private isTasksRaw(value: unknown): value is TaskRaw[] {
+    private isTasksRaw(value: unknown): value is RawTask[] {
         return Array.isArray(value) && value.every(this.isTaskRaw)
     }
 
-    private instantiateTask(tr: TaskRaw): Task {
-        return new Task(tr.name, tr.description, tr.status, tr.id);
+    private toTask(rTask: RawTask): Task {
+        return new Task(rTask.description, rTask.status, rTask.id, new Date(rTask.createdAt), new Date(rTask.updatedAt));
     }
 
-    private instantiateTasks(trs: TaskRaw[]): Task[] {
-        return trs.map(tr => this.instantiateTask(tr));
+    private toTasks(rTasks: RawTask[]): Task[] {
+        return rTasks.map(tr => this.toTask(tr));
     }
-
-    //get last id?
 }

@@ -2,16 +2,21 @@ import { Status, UNDEFINED_ID } from "./types";
 
 export default class Task {
     private id: number;
-    private name: string;
     private description: string;
     private status: Status;
+    private createdAt: Date;
+    private updatedAt: Date;
 
-    constructor(name: string, description = '', status = Status.todo, id?: number) {
+    constructor(description: string, status = Status.todo, id?: number, createdAt?: Date, updatedAt?: Date) {
         if (id) this.id = id;
         else this.id = UNDEFINED_ID;
-        this.name = name;
         this.description = description;
         this.status = status;
+
+        if (createdAt) this.createdAt = createdAt;
+        else this.createdAt = new Date();
+        if (updatedAt) this.updatedAt = updatedAt;
+        else this.updatedAt = new Date();
     }
 
     getId() {
@@ -22,8 +27,8 @@ export default class Task {
         this.id = id;
     }
 
-    setName(name: string) {
-        this.name = name;
+    setDescription(description: string) {
+        this.description = description;
     }
 
     getStatus() {
@@ -39,11 +44,15 @@ export default class Task {
         this.status = status;
     }
 
+    setUpdatedAt(date: Date) {
+        this.updatedAt = date;
+    }
+
     toString(): string {
-        return `${this.id}. ${this.status}: "${this.name}"`;
+        return `${this.id}. ${this.status}: "${this.description}"`;
     }
 
     toStringDetails(): string {
-        return `${this.id}. ${this.status}: "${this.name}" - ${this.description}`;
+        return `${this.id}. ${this.status}: "${this.description}" - created: ${this.createdAt}, updated: ${this.updatedAt}`;
     }
 }
