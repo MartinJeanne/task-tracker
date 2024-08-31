@@ -66,13 +66,15 @@ const onNewLine = async (line: string) => {
                 break;
             }
 
-            if (!Task.isStatus(newStatus))
-                console.warn(`Invalid status: ${newStatus}`)
-            else {
-                toUpdate.setSatus(newStatus);
-                toUpdate.setUpdatedAt(new Date());
-                await taskRepo.save(toUpdate);
+            if (!Task.isStatus(newStatus)) {
+                console.warn(`Invalid status: ${newStatus}`);
+                break;
             }
+
+            toUpdate.setSatus(newStatus);
+            toUpdate.setUpdatedAt(new Date());
+            await taskRepo.save(toUpdate);
+            break;
         }
 
         case CommandName.delete: {
@@ -84,6 +86,7 @@ const onNewLine = async (line: string) => {
                 break;
             }
             await taskRepo.delete(toDelete);
+            break;
         }
     }
 }
