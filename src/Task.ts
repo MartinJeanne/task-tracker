@@ -1,4 +1,4 @@
-import { Status } from "./types";
+import { Status, UNDEFINED_ID } from "./types";
 
 export default class Task {
     private id: number;
@@ -6,8 +6,9 @@ export default class Task {
     private description: string;
     private status: Status;
 
-    constructor(id: number, name: string, description = '', status = Status.todo) {
-        this.id = id;
+    constructor(name: string, description = '', status = Status.todo, id?: number) {
+        if (id) this.id = id;
+        else this.id = UNDEFINED_ID;
         this.name = name;
         this.description = description;
         this.status = status;
@@ -17,8 +18,25 @@ export default class Task {
         return this.id;
     }
 
+    setId(id: number): void {
+        this.id = id;
+    }
+
+    setName(name: string) {
+        this.name = name;
+    }
+
     getStatus() {
         return this.status;
+    }
+
+    static isStatus(status: string): status is Status {
+        const s = status as Status;
+        return Object.values(Status).includes(s)
+    }
+
+    setSatus(status: Status) {
+        this.status = status;
     }
 
     toString(): string {

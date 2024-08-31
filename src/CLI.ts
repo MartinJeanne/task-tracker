@@ -11,8 +11,8 @@ export default class CLI {
         });
     }
 
-    start() {
-        console.log('Welcome to the task-tracker CLI!');
+    start(callback: () => void) {
+        callback();
         this.rl.prompt();
     }
 
@@ -23,9 +23,9 @@ export default class CLI {
         });
     }
 
-    onCloseListener() {
+    onCloseListener(callback: () => void) {
         this.rl.on('close', () => {
-            console.log('\nHave a great day!');
+            callback();
             process.exit(0);
         });
     }

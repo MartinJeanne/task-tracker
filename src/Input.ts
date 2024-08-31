@@ -1,20 +1,21 @@
 import InputError from "./error/InputError";
+import { CommandName } from "./types";
 
 export type Command = {
-    name: string;
+    name: CommandName;
     argsMin: number;
     argsMax: number;
     example: string;
 }
 
 export default class Input {
-    private static commandTypes: Command[] = [
-        { name: 'list', argsMin: 0, argsMax: 1, example: 'list (:status)' },
-        { name: 'add', argsMin: 1, argsMax: 1, example: 'add :name' },
-        { name: 'update', argsMin: 2, argsMax: 2, example: 'update :id :newName' },
-        { name: 'mark', argsMin: 2, argsMax: 2, example: 'mark :id :newStatus' },
-        { name: 'delete', argsMin: 1, argsMax: 1, example: 'delete :id' }
-    ]
+    private static availableCommands: Command[] = [
+        { name: CommandName.list, argsMin: 0, argsMax: 1, example: `${CommandName.list} (:status)` },
+        { name: CommandName.add, argsMin: 1, argsMax: 1, example: `${CommandName.add} :name` },
+        { name: CommandName.update, argsMin: 2, argsMax: 2, example: `${CommandName.update} :id :newName` },
+        { name: CommandName.mark, argsMin: 2, argsMax: 2, example: `${CommandName.mark} :id :newStatus` },
+        { name: CommandName.delete, argsMin: 1, argsMax: 1, example: `${CommandName.delete} :id` }
+    ];
 
     private command: Command;
     private args: string[];
@@ -31,22 +32,21 @@ export default class Input {
         if (!lineArray || lineArray.length < 1)
             throw new InputError('No command passed.');
 
-        const command = Input.commandTypes.filter(cmd => cmd.name === lineArray[0]);
+        const commandName = lineArray[0] as CommandName;
+        if (!Object.values(CommandName).includes(commandName))
+            throw new InputError(`Unknow command: ${commandName}\nPossible commands: ${CommandName}`);
 
-        if (command.length === 0) {
-            const cmdNames = Input.commandTypes.map(cmd => cmd.name)
-            throw new InputError(`Invalid command: ${lineArray[0]}\nPossible commands: ${cmdNames}`);
-        } else if (command.length > 1) {
-            throw new InputError(`Internal error, multiple CommandTypes found for command: "${lineArray[0]}"`);
-        }
+        const command = Input.availableCommands.find(cmd => cmd.name === commandName);
+        if (!command)
+            throw new InputError(`Internal error: command name found in commandName enum but not in commandTypes array`);
 
-        this.command = command[0];
+        this.command = command;
         const min = this.command.argsMin;
         const max = this.command.argsMax;
 
         const args = lineArray.slice(1, lineArray.length);
         if (args.length < min || args.length > max) {
-            throw new InputError(`Invalid args numbers, got: ${args.length} exepected min: ${min}, max: ${max}\n${this.command.example}`);
+            throw new InputError(`Invalid args numbers, got: ${args.length}, exepected min: ${min}, max: ${max}\n${this.command.example}`);
         }
 
         this.args = args;
