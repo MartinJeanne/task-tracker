@@ -9,12 +9,13 @@ export type Command = {
 }
 
 export default class Input {
-    private static availableCommands: Command[] = [
+    public static availableCommands: Command[] = [
         { name: CommandName.list, argsMin: 0, argsMax: 1, example: `${CommandName.list} (:status)` },
         { name: CommandName.add, argsMin: 1, argsMax: 1, example: `${CommandName.add} :name` },
         { name: CommandName.update, argsMin: 2, argsMax: 2, example: `${CommandName.update} :id :newName` },
         { name: CommandName.mark, argsMin: 2, argsMax: 2, example: `${CommandName.mark} :id :newStatus` },
-        { name: CommandName.delete, argsMin: 1, argsMax: 1, example: `${CommandName.delete} :id` }
+        { name: CommandName.delete, argsMin: 1, argsMax: 1, example: `${CommandName.delete} :id` },
+        { name: CommandName.help, argsMin: 0, argsMax: 1, example: `${CommandName.help} (:commandName)` }
     ];
 
     private command: Command;
@@ -33,7 +34,7 @@ export default class Input {
             throw new InputError('No command passed.');
 
         const commandName = lineArray[0] as CommandName;
-        if (!Object.values(CommandName).includes(commandName)) {
+        if (!Input.isCommandName(commandName)) {
             throw new InputError(`Say what?\nPossible commands: ${Object.values(CommandName)}`);
         }
 
@@ -51,6 +52,11 @@ export default class Input {
         }
 
         this.args = args;
+    }
+
+    public static isCommandName(command: string): command is CommandName {
+        const cmd = command as CommandName;
+        return Object.values(CommandName).includes(cmd);
     }
 
     getCmd(): Command {

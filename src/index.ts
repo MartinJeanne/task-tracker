@@ -1,12 +1,10 @@
 import CLI from './CLI';
 import InputError from './error/InputError';
-import JSONParseError from './error/JSONParseError';
 import Input from './Input';
 import Task from './Task';
 import TaskRepository from './TaskRepository';
-import { CommandName, Status } from './types';
+import { CommandName } from './types';
 
-const cli = new CLI();
 const taskRepo = new TaskRepository();
 
 const onNewLine = async (line: string) => {
@@ -36,7 +34,6 @@ const onNewLine = async (line: string) => {
         case CommandName.add: {
             const newTask = new Task(input.getArg(0));
             await taskRepo.save(newTask);
-            console.log('New task added: ' + newTask.toString());
             break;
         }
 
@@ -88,9 +85,21 @@ const onNewLine = async (line: string) => {
             await taskRepo.delete(toDelete);
             break;
         }
+
+        case CommandName.help: {
+            const availableCmds = Input.availableCommands;
+            if (!input.getArg(0) || !Input.isCommandName(input.getArg(0))) {
+                const helpCmld = availableCmds.find(cmd => cmd.name === CommandName.help);
+                console.log(`Command list: ${Object.values(CommandName)}\nTo get help on a command: ${helpCmld?.example}`);
+                break;
+            }
+            const cmdToGiveHelp = availableCmds.find(cmd => cmd.name === input.getArg(0));
+            console.log(cmdToGiveHelp?.example);
+        }
     }
 }
 
+const cli = new CLI();
 cli.onLineListener(onNewLine);
 cli.onCloseListener(() => console.log('\nHave a great day!'));
 cli.start(() => console.log('Welcome to the task-tracker CLI!'));

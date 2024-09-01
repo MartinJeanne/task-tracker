@@ -9,7 +9,8 @@ export enum CommandName {
     add = 'add',
     update = 'update',
     mark = 'mark',
-    delete = 'delete'
+    delete = 'delete',
+    help = 'help'
 }
 
 export const UNDEFINED_ID = -1;

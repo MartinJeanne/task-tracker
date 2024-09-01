@@ -45,7 +45,9 @@ export default class TaskRepository {
             task.setId(this.nextValidId(tasks));
         else {
             const toUpdate = tasks.find(t => t.getId() === task.getId());
-            if (toUpdate) tasks.splice(tasks.indexOf(toUpdate), 1);
+            if (toUpdate) {
+                tasks.splice(tasks.indexOf(toUpdate), 1);
+            }
         }
         tasks.push(task);
         await this.overwriteAll(tasks);
