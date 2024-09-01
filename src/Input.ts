@@ -26,6 +26,7 @@ export default class Input {
         const regex = /"(.*?)"|(\S+)/g;
         let match;
 
+        // If quotes then the text in quotes is counted as one arg, ex: add "hello world"
         while ((match = regex.exec(line)) !== null) {
             lineArray.push(match[1] || match[2]);
         }

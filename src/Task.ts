@@ -52,7 +52,7 @@ export default class Task {
         return `${this.id}. ${this.status}: "${this.description}"`;
     }
 
-    toStringDetails(): string {
+    toStringDetail(): string {
         return `${this.id}. ${this.status}: "${this.description}" - created: ${this.createdAt}, updated: ${this.updatedAt}`;
     }
 }
